@@ -67,6 +67,7 @@ pnpm dev
 
 - PM2 示例：`deploy/pm2.config.cjs`
 - Nginx 示例：`deploy/nginx.pichome.conf.example`
+- Agent 自动部署：`deploy/AGENT_AUTO_DEPLOY.md`
 
 ## Docker 部署（推荐）
 
