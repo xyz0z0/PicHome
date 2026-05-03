@@ -12,7 +12,10 @@ import { getStorageAdapter } from "@/lib/storage";
 import { rateLimitUpload } from "@/lib/rateLimit";
 import { jsonError } from "@/lib/api";
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const BYTES_PER_MB = 1024 * 1024;
+const DEFAULT_MAX_FILE_SIZE_BYTES = 5 * BYTES_PER_MB;
+const MIN_MAX_FILE_SIZE_BYTES = 1 * BYTES_PER_MB;
+const FILE_TOO_LARGE_ERROR_CODE = "FILE_TOO_LARGE";
 const FILE_FIELD_NAME = "file";
 const ALLOWED_MIMES = new Set([
   "image/png",
@@ -20,6 +23,23 @@ const ALLOWED_MIMES = new Set([
   "image/gif",
   "image/webp",
 ]);
+
+function getMaxFileSizeBytes() {
+  const rawValue = process.env.UPLOAD_MAX_BYTES;
+  if (!rawValue) {
+    return DEFAULT_MAX_FILE_SIZE_BYTES;
+  }
+  const parsedValue = Number.parseInt(rawValue, 10);
+  if (Number.isNaN(parsedValue)) {
+    return DEFAULT_MAX_FILE_SIZE_BYTES;
+  }
+  return Math.max(parsedValue, MIN_MAX_FILE_SIZE_BYTES);
+}
+
+function getMaxFileSizeMessage(maxFileSizeBytes: number) {
+  const maxFileSizeMb = Math.floor(maxFileSizeBytes / BYTES_PER_MB);
+  return `Image is too large. Max ${maxFileSizeMb}MB`;
+}
 
 function getBaseUrl() {
   return (process.env.BASEURL || "").replace(/\/+$/, "");
@@ -65,11 +85,12 @@ export async function POST(req: Request) {
 
   const headersObj = Object.fromEntries(req.headers.entries());
 
+  const maxFileSizeBytes = getMaxFileSizeBytes();
   const bb = Busboy({
     headers: headersObj,
     limits: {
       files: 1,
-      fileSize: MAX_FILE_SIZE,
+      fileSize: maxFileSizeBytes,
     },
   });
 
@@ -77,59 +98,66 @@ export async function POST(req: Request) {
   let originalName: string | null = null;
   let clientMime: string | null = null;
 
-  const parsed = await new Promise<void>((resolve, reject) => {
-    let seen = false;
+  try {
+    await new Promise<void>((resolve, reject) => {
+      let seen = false;
 
-    bb.on(
-      "file",
-      (
-        fieldname: string,
-        file: NodeJS.ReadableStream,
-        info: { filename: string; encoding: string; mimeType: string }
-      ) => {
-      if (seen) {
-        // 只允许一个文件
-        (file as any).resume();
-        return;
-      }
-      if (fieldname !== FILE_FIELD_NAME) {
-        (file as any).resume();
-        return;
-      }
+      bb.on(
+        "file",
+        (
+          fieldname: string,
+          file: NodeJS.ReadableStream,
+          info: { filename: string; encoding: string; mimeType: string }
+        ) => {
+          if (seen) {
+            // 只允许一个文件
+            (file as any).resume();
+            return;
+          }
+          if (fieldname !== FILE_FIELD_NAME) {
+            (file as any).resume();
+            return;
+          }
 
-      seen = true;
-      // HTTP multipart 文件名以 Latin-1 传输，需还原为 UTF-8
-      const rawName = info.filename || "upload";
-      try {
-        originalName = Buffer.from(rawName, "latin1").toString("utf8");
-      } catch {
-        originalName = rawName;
-      }
-      clientMime = info.mimeType || null;
+          seen = true;
+          // HTTP multipart 文件名以 Latin-1 传输，需还原为 UTF-8
+          const rawName = info.filename || "upload";
+          try {
+            originalName = Buffer.from(rawName, "latin1").toString("utf8");
+          } catch {
+            originalName = rawName;
+          }
+          clientMime = info.mimeType || null;
 
-      const chunks: Buffer[] = [];
-      (file as any).on("data", (data: Buffer) =>
-        chunks.push(Buffer.from(data))
+          const chunks: Buffer[] = [];
+          (file as any).on("data", (data: Buffer) =>
+            chunks.push(Buffer.from(data))
+          );
+          (file as any).on("limit", () => {
+            reject(new Error(FILE_TOO_LARGE_ERROR_CODE));
+          });
+          (file as any).on("error", (err: any) => reject(err));
+          (file as any).on("end", () => {
+            buffer = Buffer.concat(chunks);
+          });
+        }
       );
-      (file as any).on("limit", () => {
-        reject(new Error("File too large"));
-      });
-      (file as any).on("error", (err: any) => reject(err));
-      (file as any).on("end", () => {
-        buffer = Buffer.concat(chunks);
-      });
+
+      bb.on("error", (err) => reject(err));
+      bb.on("finish", () => resolve());
+
+      Readable.fromWeb(bodyStream as any).pipe(bb);
+    });
+  } catch (error) {
+    if (error instanceof Error && error.message === FILE_TOO_LARGE_ERROR_CODE) {
+      return jsonError(
+        413,
+        "FILE_TOO_LARGE",
+        getMaxFileSizeMessage(maxFileSizeBytes)
+      );
     }
-    );
-
-    bb.on("error", (err) => reject(err));
-    bb.on("finish", () => resolve());
-
-    Readable.fromWeb(bodyStream as any).pipe(bb);
-  }).catch((e: any) => {
-    throw e;
-  });
-
-  void parsed;
+    throw error;
+  }
 
   if (!buffer) {
     return jsonError(400, "INVALID_FILE", "Please upload a file");

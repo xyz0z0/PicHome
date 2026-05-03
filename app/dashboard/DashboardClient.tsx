@@ -77,6 +77,26 @@ const card: React.CSSProperties = {
   padding: 20,
 };
 
+const BYTES_PER_MB = 1024 * 1024;
+const DEFAULT_UPLOAD_MAX_BYTES = 5 * BYTES_PER_MB;
+const MIN_UPLOAD_MAX_BYTES = 1 * BYTES_PER_MB;
+
+function getClientUploadMaxBytes() {
+  const rawValue = process.env.NEXT_PUBLIC_UPLOAD_MAX_BYTES;
+  if (!rawValue) {
+    return DEFAULT_UPLOAD_MAX_BYTES;
+  }
+  const parsedValue = Number.parseInt(rawValue, 10);
+  if (Number.isNaN(parsedValue)) {
+    return DEFAULT_UPLOAD_MAX_BYTES;
+  }
+  return Math.max(parsedValue, MIN_UPLOAD_MAX_BYTES);
+}
+
+function formatUploadMaxLabel(uploadMaxBytes: number) {
+  return `${Math.floor(uploadMaxBytes / BYTES_PER_MB)}MB`;
+}
+
 // ─── 工具函数 ─────────────────────────────────────────────────────────────────
 async function copyText(text: string) {
   try { await navigator.clipboard.writeText(text); } catch { /* ignore */ }
@@ -370,8 +390,14 @@ function UploadZone({ onUploaded }: { onUploaded: (url: string) => void }) {
   const [dragging, setDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const uploadMaxBytes = getClientUploadMaxBytes();
+  const uploadMaxLabel = formatUploadMaxLabel(uploadMaxBytes);
 
   async function upload(file: File) {
+    if (file.size > uploadMaxBytes) {
+      setError(`图片过大，最大支持 ${uploadMaxLabel}`);
+      return;
+    }
     setError(null);
     setUploading(true);
     try {
@@ -380,6 +406,10 @@ function UploadZone({ onUploaded }: { onUploaded: (url: string) => void }) {
       const res = await fetch("/api/images", { method: "POST", body: fd });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
+        if (res.status === 413) {
+          setError(`图片过大，最大支持 ${uploadMaxLabel}`);
+          return;
+        }
         setError(data?.error?.message || "上传失败");
         return;
       }
@@ -432,7 +462,9 @@ function UploadZone({ onUploaded }: { onUploaded: (url: string) => void }) {
           <div style={{ fontSize: 14, color: colors.muted }}>
             拖拽图片到此处，或<span style={{ color: colors.primary, fontWeight: 600 }}>点击上传</span>
           </div>
-          <div style={{ fontSize: 12, color: colors.muted }}>支持 PNG、JPG、GIF、WEBP，最大 5MB</div>
+          <div style={{ fontSize: 12, color: colors.muted }}>
+            支持 PNG、JPG、GIF、WEBP，最大 {uploadMaxLabel}
+          </div>
         </>
       )}
       {error && <div style={{ fontSize: 13, color: colors.danger, marginTop: 4 }}>{error}</div>}

@@ -2,6 +2,7 @@ server {
   listen 80;
   server_name your-domain.example.com;
 
+  # Keep this >= UPLOAD_MAX_BYTES (default 5m).
   client_max_body_size 5m;
 
   location / {

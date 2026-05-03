@@ -49,7 +49,7 @@ pnpm dev
 - 使用真实强密钥，不要保留默认 `JWT_SECRET`
 - `.env*` 不入库，仅保留 `.env.example`
 - `BASEURL` 指向真实 HTTPS 域名
-- 反向代理上传限制与应用一致（当前 5MB）
+- 反向代理上传限制与应用一致（默认 5MB，可由 `UPLOAD_MAX_BYTES` 调整）
 - 备份 `prisma/database.sqlite` 与 `uploads` 目录
 - 用管理员账号验证：
   - 图片上传/删除
@@ -83,6 +83,8 @@ cp .env.example .env.production
 - `JWT_SECRET`（强随机字符串）
 - `NEXT_PUBLIC_TURNSTILE_SITE_KEY`
 - `TURNSTILE_SECRET_KEY`
+- `UPLOAD_MAX_BYTES`（默认 `5242880`，单位字节）
+- `NEXT_PUBLIC_UPLOAD_MAX_BYTES`（建议与 `UPLOAD_MAX_BYTES` 保持一致）
 
 3. 启动容器：
 

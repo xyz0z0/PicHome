@@ -51,7 +51,7 @@ Notes:
 - Use a real strong secret instead of the default `JWT_SECRET`.
 - Do not commit `.env*`; keep only `.env.example`.
 - Set `BASEURL` to your real HTTPS domain.
-- Keep reverse-proxy upload limit consistent with the app limit (currently 5MB).
+- Keep reverse-proxy upload limit consistent with the app limit (default 5MB, configurable via `UPLOAD_MAX_BYTES`).
 - Back up `prisma/database.sqlite` and the `uploads` directory.
 - Verify with an admin account:
   - Image upload/delete
@@ -84,6 +84,8 @@ cp .env.example .env.production
 - `JWT_SECRET` (strong random string)
 - `NEXT_PUBLIC_TURNSTILE_SITE_KEY`
 - `TURNSTILE_SECRET_KEY`
+- `UPLOAD_MAX_BYTES` (default `5242880`, bytes)
+- `NEXT_PUBLIC_UPLOAD_MAX_BYTES` (recommended to match `UPLOAD_MAX_BYTES`)
 
 3. Start containers:
 
