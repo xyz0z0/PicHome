@@ -15,6 +15,7 @@ RUN npm install
 FROM deps AS builder
 
 COPY . .
+RUN npx prisma generate
 RUN npm run build
 
 FROM base AS runner
