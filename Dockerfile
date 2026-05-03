@@ -14,6 +14,9 @@ RUN npm install
 
 FROM deps AS builder
 
+ARG NEXT_PUBLIC_TURNSTILE_SITE_KEY
+ENV NEXT_PUBLIC_TURNSTILE_SITE_KEY=$NEXT_PUBLIC_TURNSTILE_SITE_KEY
+
 COPY . .
 RUN npx prisma generate
 RUN npm run build
