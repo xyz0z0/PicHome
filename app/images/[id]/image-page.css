@@ -1,0 +1,185 @@
+/* ── Layout ── */
+.ip-root {
+  min-height: 100vh;
+  background: #f4f6f9;
+  display: flex;
+  flex-direction: column;
+}
+
+.ip-header {
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 0 24px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+}
+
+.ip-logo {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a56db;
+  letter-spacing: -0.3px;
+}
+
+.ip-main {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 16px 60px;
+}
+
+/* ── Card ── */
+.ip-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  width: 100%;
+  max-width: 860px;
+}
+
+/* ── Image area ── */
+.ip-image-wrap {
+  background: #111827;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 320px;
+  max-height: 600px;
+  overflow: hidden;
+}
+
+.ip-image-wrap a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.ip-image {
+  max-width: 100%;
+  max-height: 600px;
+  object-fit: contain;
+  display: block;
+  cursor: zoom-in;
+  transition: opacity 0.15s;
+}
+
+.ip-image:hover {
+  opacity: 0.9;
+}
+
+/* ── Info panel ── */
+.ip-info {
+  padding: 24px 28px 28px;
+}
+
+.ip-filename {
+  font-size: 17px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ip-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.ip-tag {
+  background: #f3f4f6;
+  color: #6b7280;
+  font-size: 13px;
+  padding: 3px 10px;
+  border-radius: 99px;
+  white-space: nowrap;
+}
+
+/* ── Action buttons ── */
+.copy-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s, transform 0.1s;
+  background: #1a56db;
+  color: #fff;
+}
+
+.copy-btn:hover {
+  background: #1648c0;
+  transform: translateY(-1px);
+}
+
+.copy-btn:active {
+  transform: translateY(0);
+}
+
+.copy-btn.copied {
+  background: #059669;
+}
+
+.copy-btn.secondary {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.copy-btn.secondary:hover {
+  background: #e5e7eb;
+}
+
+.copy-btn.secondary.copied {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.copy-btn.outline {
+  background: transparent;
+  color: #6b7280;
+  border: 1px solid #d1d5db;
+}
+
+.copy-btn.outline:hover {
+  background: #f9fafb;
+  color: #374151;
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .ip-main {
+    padding: 20px 8px 40px;
+  }
+  .ip-card {
+    border-radius: 12px;
+  }
+  .ip-info {
+    padding: 16px 16px 20px;
+  }
+  .ip-filename {
+    font-size: 15px;
+  }
+  .copy-btn {
+    padding: 7px 14px;
+    font-size: 13px;
+  }
+}

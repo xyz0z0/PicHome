@@ -1,0 +1,20 @@
+services:
+  pichome:
+    container_name: pichome
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: pichome:latest
+    env_file:
+      - .env.production
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      DATABASE_URL: file:./prisma/database.sqlite
+      STORAGE_ROOT: /app/uploads
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    volumes:
+      - ./prisma:/app/prisma
+      - ./uploads:/app/uploads
+    restart: unless-stopped

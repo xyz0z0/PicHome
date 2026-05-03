@@ -1,0 +1,42 @@
+{
+  "name": "pichome",
+  "version": "1.0.0",
+  "description": "A self-hosted image hosting service with MCP support",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3000 -H 0.0.0.0",
+    "build": "next build",
+    "start": "next start -p 3000",
+    "mcp:start": "node mcp/server.mjs",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "test": "echo \"no tests\""
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@marsidev/react-turnstile": "^1.5.1",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@prisma/client": "^6.19.2",
+    "bcryptjs": "^2.4.3",
+    "busboy": "^1.6.0",
+    "dotenv": "^16.4.5",
+    "dotenv-flow": "^4.1.0",
+    "file-type": "^21.3.4",
+    "jsonwebtoken": "^9.0.2",
+    "next": "^14.2.14",
+    "prisma": "^6.19.2",
+    "rate-limiter-flexible": "^10.0.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "sharp": "^0.34.5"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/busboy": "^1.5.4",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/node": "^20.12.13",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "typescript": "^5.4.5"
+  }
+}
